@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Scientific Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222;
+            margin: 0;
+            flex-direction: column;
+            color: #f9f9f9;
+        }
+
+        .calculator-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .calculator {
+            width: 360px;
+            background-color: #333;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); /* Subtle shadow */
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            margin-bottom: 20px;
+}
+
+
+        .calculator:hover {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .calculator-display {
+            background-color: #444;
+            color: #ecf0f1;
+            padding: 20px;
+            font-size: 2rem;
+            text-align: right;
+            border-bottom: 1px solid #555;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+        }
+
+        .btn {
+            padding: 15px;
+            font-size: 1rem;
+            border: none;
+            outline: none;
+            background-color: #555;
+            color: #ecf0f1;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px; /* Soft edges */
+        }
+
+        .btn:hover {
+            background-color: #666;
+            transform: scale(1.05);
+        }
+
+        .operator-btn {
+            background-color: #3498db;
+            color: #ffffff;
+        }
+
+        .operator-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .function-btn {
+            background-color: #9b59b6;
+            color: #ffffff;
+        }
+
+        .function-btn:hover {
+            background-color: #8e44ad;
+        }
+
+        .history-button, .convert-button {
+            background-color: #2ecc71;
+            color: #ffffff;
+            border: none;
+            outline: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .history-button:hover, .convert-button:hover {
+            background-color: #27ae60;
+            transform: scale(1.05);
+        }
+
+        .history-container, .number-system-container {
+            background-color: #444;
+            border-radius: 10px;
+            padding: 20px;
+            width: 360px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 10px;
+        }
+
+        .history-item, .convert-item {
+            background-color: #555;
+            color: #ecf0f1;
+            padding: 10px;
+            border-bottom: 1px solid #666;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .history-item:hover, .convert-item:hover {
+            background-color: #666;
+        }
+
+        .number-system-container input, .number-system-container select {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #666;
+            border-radius: 5px;
+            background-color: #555;
+            color: #ecf0f1;
+        }
+
+        .number-system-container button {
+            padding: 10px;
+            background-color: #3498db;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .number-system-container button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .conversion-result {
+            background-color: #555;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #333;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-content button {
+            background-color: #e74c3c;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .modal-content button:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator">
+            <div class="calculator-display" id="display">0</div>
+            <div class="calculator-buttons">
+                <button class="btn function-btn" onclick="clearDisplay()">C</button>
+                <button class="btn function-btn" onclick="deleteLast()">&larr;</button>
+                <button class="btn function-btn" onclick="appendOperator('(')">(</button>
+                <button class="btn function-btn" onclick="appendOperator(')')">)</button>
+                <button class="btn operator-btn" onclick="appendOperator('/')">/</button>
+                
+                <button class="btn" onclick="appendNumber(7)">7</button>
+                <button class="btn" onclick="appendNumber(8)">8</button>
+                <button class="btn" onclick="appendNumber(9)">9</button>
+                <button class="btn operator-btn" onclick="appendOperator('*')">*</button>
+                <button class="btn operator-btn" onclick="appendOperator('^')">^</button>
+
+                <button class="btn" onclick="appendNumber(4)">4</button>
+                <button class="btn" onclick="appendNumber(5)">5</button>
+                <button class="btn" onclick="appendNumber(6)">6</button>
+                <button class="btn operator-btn" onclick="appendOperator('-')">-</button>
+                <button class="btn function-btn" onclick="appendFunction('sqrt')">√</button>
+
+                <button class="btn" onclick="appendNumber(1)">1</button>
+                <button class="btn" onclick="appendNumber(2)">2</button>
+                <button class="btn" onclick="appendNumber(3)">3</button>
+                <button class="btn operator-btn" onclick="appendOperator('+')">+</button>
+                <button class="btn function-btn" onclick="appendFunction('log')">log</button>
+
+                <button class="btn" onclick="appendNumber(0)">0</button>
+                <button class="btn" onclick="appendOperator('.')">.</button>
+                <button class="btn" onclick="appendFunction('exp')">exp</button>
+                <button class="btn operator-btn" onclick="calculateResult()">=</button>
+                <button class="btn function-btn" onclick="appendFunction('abs')">|x|</button>
+
+                <button class="btn function-btn" onclick="appendFunction('sin')">sin</button>
+                <button class="btn function-btn" onclick="appendFunction('cos')">cos</button>
+                <button class="btn function-btn" onclick="appendFunction('tan')">tan</button>
+                <button class="btn function-btn" onclick="appendFunction('pi')">π</button>
+                <button class="btn function-btn" onclick="openNumberSystemModal()">Number System</button>
+            </div>
+        </div>
+        <button class="history-button" onclick="toggleHistory()">Show History</button>
+        <div class="history-container" id="history-container"></div>
+    </div>
+
+    <!-- Modal for Number System -->
+    <div class="modal" id="numberSystemModal">
+        <div class="modal-content">
+            <h3>Number System Conversion</h3>
+            <input type="text" id="numberInput" placeholder="Enter number">
+            <select id="fromBase">
+                <option value="2">Binary</option>
+                <option value="10" selected>Decimal</option>
+                <option value="16">Hexadecimal</option>
+            </select>
+            <select id="toBase">
+                <option value="2">Binary</option>
+                <option value="10" selected>Decimal</option>
+                <option value="16">Hexadecimal</option>
+            </select>
+            <button onclick="convertNumber()">Convert</button>
+            <div class="conversion-result" id="conversionResult"></div>
+            <button onclick="closeNumberSystemModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.9.0/math.min.js"></script>
+    <script>
+        let display = document.getElementById('display');
+        let historyContainer = document.getElementById('history-container');
+        let numberSystemModal = document.getElementById('numberSystemModal');
+        let history = [];
+        let currentInput = '';
+
+        function appendNumber(number) {
+            if (currentInput.length < 20) {
+                currentInput += number;
+                display.innerText = currentInput;
+            }
+        }
+
+        function appendOperator(operator) {
+            currentInput += operator;
+            display.innerText = currentInput;
+        }
+
+        function appendFunction(func) {
+            currentInput += func + '(';
+            display.innerText = currentInput;
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            display.innerText = '0';
+        }
+
+        function deleteLast() {
+            currentInput = currentInput.slice(0, -1);
+            display.innerText = currentInput || '0';
+        }
+
+        function calculateResult() {
+            try {
+                let result = math.evaluate(currentInput);
+                history.push({ input: currentInput, result });
+                display.innerText = result;
+                currentInput = result;
+                updateHistory();
+            } catch (e) {
+                display.innerText = 'Error';
+            }
+        }
+
+        function updateHistory() {
+            historyContainer.innerHTML = '';
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = `${item.input} = ${item.result}`;
+                historyContainer.appendChild(div);
+            });
+        }
+
+        function toggleHistory() {
+            if (historyContainer.style.display === 'none' || historyContainer.style.display === '') {
+                historyContainer.style.display = 'block';
+            } else {
+                historyContainer.style.display = 'none';
+            }
+        }
+
+        function openNumberSystemModal() {
+            numberSystemModal.style.display = 'flex';
+        }
+
+        function closeNumberSystemModal() {
+            numberSystemModal.style.display = 'none';
+        }
+
+        function convertNumber() {
+            let numberInput = document.getElementById('numberInput').value;
+            let fromBase = parseInt(document.getElementById('fromBase').value);
+            let toBase = parseInt(document.getElementById('toBase').value);
+            try {
+                let result;
+                if (fromBase === toBase) {
+                    result = numberInput;
+                } else {
+                    let decimal = parseInt(numberInput, fromBase);
+                    result = decimal.toString(toBase).toUpperCase();
+                }
+                document.getElementById('conversionResult').innerText = `Result: ${result}`;
+            } catch (e) {
+                document.getElementById('conversionResult').innerText = 'Invalid input';
+            }
+        }
+
+        // Add event listener for Enter key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                calculateResult();
+            }
+        });
+    </script>
+</body>
+</html>
